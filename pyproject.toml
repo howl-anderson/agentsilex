@@ -1,0 +1,11 @@
+[project]
+name = "agentsilex"
+version = "0.0.1"
+dependencies = [
+  "playwright",
+  "langchain[google-genai]",
+  "langgraph",
+  "langchain-google-genai",
+  "python-dotenv",
+  "litellm>=1.76.2",
+]
