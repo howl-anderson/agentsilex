@@ -9,6 +9,7 @@ While large agent frameworks offer extensive features, they often become black b
 - **Transparent**: Every line of code is readable and understandable. No magic, no hidden complexity.
 - **Minimal**: Core implementation in ~300 lines. You can read the entire codebase in one sitting.
 - **Hackable**: Designed for modification. Fork it, customize it, make it yours.
+- **Universal LLM Support**: Built on LiteLLM, seamlessly switch between 100+ models - OpenAI, Anthropic, Google Gemini, DeepSeek, Azure, Mistral, local LLMs, and more. Change providers with one line of code.
 - **Educational**: Perfect for learning how agents actually work under the hood.
 
 ## Who is this for?
@@ -45,7 +46,7 @@ def get_weather(city: str) -> str:
 # Create an agent with the weather tool
 agent = Agent(
     name="Weather Assistant",
-    model="gemini/gemini-2.0-flash",  # or any LiteLLM supported model
+    model="gemini/gemini-2.0-flash",  # Switch models: openai/gpt-4, anthropic/claude-3-5-sonnet, deepseek/deepseek-chat, et al.
     instructions="Help users find weather information using the available tools.",
     tools=[get_weather]
 )
