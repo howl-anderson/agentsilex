@@ -1,8 +1,0 @@
-Metadata-Version: 2.4
-Name: agentsilex
-Version: 0.0.1
-Requires-Dist: playwright
-Requires-Dist: langchain
-Requires-Dist: langgraph
-Requires-Dist: langchain-google-genai
-Requires-Dist: python-dotenv

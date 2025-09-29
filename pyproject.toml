@@ -2,10 +2,11 @@
 name = "agentsilex"
 version = "0.0.1"
 dependencies = [
-  "playwright",
-  "langchain[google-genai]",
-  "langgraph",
-  "langchain-google-genai",
-  "python-dotenv",
+  "docstring-parser>=0.17.0",
   "litellm>=1.76.2",
+  "pydantic>=2.11.7",
 ]
+requires-python = ">=3.12"
+
+[dependency-groups]
+dev = ["pytest>=8.4.2"]
