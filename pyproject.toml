@@ -1,12 +1,33 @@
 [project]
 name = "agentsilex"
 version = "0.0.1"
+description = "A transparent, minimal, and hackable agent framework"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Xiaoquan Kong", email = "u1mail2me@gmail.com" }]
+keywords = ["ai", "agent", "llm", "framework", "litellm"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+]
 dependencies = [
   "docstring-parser>=0.17.0",
   "litellm>=1.76.2",
   "pydantic>=2.11.7",
 ]
 requires-python = ">=3.12"
+
+[project.urls]
+Homepage = "https://github.com/howl-anderson/agentsilex"
+Repository = "https://github.com/howl-anderson/agentsilex"
+Issues = "https://github.com/howl-anderson/agentsilex/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = ["pytest>=8.4.2"]
