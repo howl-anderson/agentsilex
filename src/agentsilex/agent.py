@@ -10,14 +10,16 @@ class ToolsSet:
     def get_specification(self):
         spec = []
         for tool in self.tools:
-            spec.append({
-                "type": "function",
-                "function": {
-                    "name": tool.name,
-                    "description": tool.description,
-                    "parameters": tool.parameters_specification
+            spec.append(
+                {
+                    "type": "function",
+                    "function": {
+                        "name": tool.name,
+                        "description": tool.description,
+                        "parameters": tool.parameters_specification,
+                    },
                 }
-            })
+            )
 
         return spec
 
@@ -33,11 +35,7 @@ class ToolsSet:
 
         result = tool(**args)
 
-        return {
-            "role": "tool",
-            "tool_call_id": call_spec.id,
-            "content": str(result)
-        }
+        return {"role": "tool", "tool_call_id": call_spec.id, "content": str(result)}
 
 
 class Agent:
@@ -46,11 +44,10 @@ class Agent:
         name: str,
         model: Any,
         instructions: str,
-        tools: List[FunctionTool],
+        tools: List[FunctionTool] | None = None,
     ):
         self.name = name
         self.model = model
         self.instructions = instructions
-        self.tools = tools
-
-        self.tools_set = ToolsSet(tools)
+        self.tools = tools or []
+        self.tools_set = ToolsSet(self.tools)
