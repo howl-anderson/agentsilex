@@ -1,5 +1,24 @@
-from typing import Any, List
+from typing import Any, List, Tuple, Dict
 from agentsilex.function_tool import FunctionTool
+import json
+import re
+
+HANDOFF_TOOL_PREFIX = "transfer_to_"
+
+
+def as_valid_tool_name(name: str, prefix: str | None = None) -> str:
+    # Replace invalid chars with underscore
+    sanitized = re.sub(r"[^a-zA-Z0-9_.:+-]", "_", name)
+
+    # Ensure starts with letter or underscore
+    if sanitized and not re.match(r"^[a-zA-Z_]", sanitized):
+        sanitized = "_" + sanitized
+
+    if prefix:
+        sanitized = prefix + sanitized
+
+    # Truncate to 64 chars
+    return sanitized[:64] if sanitized else "_unnamed"
 
 
 class ToolsSet:
@@ -24,8 +43,6 @@ class ToolsSet:
         return spec
 
     def execute_function_call(self, call_spec):
-        import json
-
         tool = self.registry.get(call_spec.function.name)
 
         if not tool:
@@ -38,6 +55,57 @@ class ToolsSet:
         return {"role": "tool", "tool_call_id": call_spec.id, "content": str(result)}
 
 
+class Handoff:
+    def __init__(self, agent: "Agent"):
+        self.agent = agent
+
+    @property
+    def name(self):
+        return as_valid_tool_name(self.agent.name, prefix="transfer_to_")
+
+    @property
+    def description(self):
+        return f"Handoff to the {self.agent.name} agent to handle the request. {self.agent.instructions}"
+
+    @property
+    def parameters_specification(self):
+        return {}
+
+
+class AgentHandoffs:
+    def __init__(self, handoffs: List["Agent"]):
+        self.handoffs: List[Handoff] = [Handoff(agent) for agent in handoffs]
+        self.registry: Dict[str, Handoff] = {
+            handoff.name: handoff for handoff in self.handoffs
+        }
+
+    def get_specification(self):
+        spec = []
+        for handoff in self.handoffs:
+            spec.append(
+                {
+                    "type": "function",
+                    "function": {
+                        "name": handoff.name,
+                        "description": handoff.description,
+                        "parameters": handoff.parameters_specification,
+                    },
+                }
+            )
+
+        return spec
+
+    def handoff_agent(self, call_spec) -> Tuple["Agent", Dict]:
+        handoff = self.registry[call_spec.function.name]
+
+        handoff_reponse = {
+            "role": "tool",
+            "tool_call_id": call_spec.id,
+            "content": json.dumps({"assistant": handoff.agent.name}),
+        }
+        return handoff.agent, handoff_reponse
+
+
 class Agent:
     def __init__(
         self,
@@ -45,9 +113,14 @@ class Agent:
         model: Any,
         instructions: str,
         tools: List[FunctionTool] | None = None,
+        handoffs: List["Agent"] | None = None,
     ):
         self.name = name
         self.model = model
         self.instructions = instructions
         self.tools = tools or []
         self.tools_set = ToolsSet(self.tools)
+        self.handoffs = AgentHandoffs(handoffs or [])
+
+    def get_system_prompt(self):
+        return {"role": "system", "content": self.instructions}

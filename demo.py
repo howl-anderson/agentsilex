@@ -19,7 +19,7 @@ agent = Agent(
 session = Session()
 
 # Run the agent with a user query
-result = Runner(agent, session).run("What's the weather in Monte Cristo")
+result = Runner(session).run(agent, "What's the weather in Monte Cristo")
 
 # output the result and the dialog history
 print("Final output: ", result.final_output)
