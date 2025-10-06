@@ -7,19 +7,31 @@ def get_weather(city: str) -> str:
     return "SUNNY"
 
 
-# create an agent with the weather tool
-agent = Agent(
+weather_agent = Agent(
     name="A weather agent",
-    model="gemini/gemini-2.5-flash",
+    model="openai/gpt-4o-mini",
     instructions="Help user to find the weather by using tools",
     tools=[get_weather],
+)
+
+faq_agent = Agent(
+    name="A FAQ agent",
+    model="openai/gpt-4o-mini",
+    instructions="Help user to answer FAQ questions",
+)
+
+main_agent = Agent(
+    name="Main agent",
+    model="openai/gpt-4o-mini",
+    instructions="You will identify questions and pass it to other agents.",
+    handoffs=[weather_agent, faq_agent],
 )
 
 # create a session, which will keep track of the dialog history
 session = Session()
 
 # Run the agent with a user query
-result = Runner(agent, session).run("What's the weather in Monte Cristo")
+result = Runner(session).run(main_agent, "What's the weather in Monte Cristo")
 
 # output the result and the dialog history
 print("Final output: ", result.final_output)
