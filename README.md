@@ -55,8 +55,8 @@ agent = Agent(
 session = Session()
 
 # Run the agent with a user query
-runner = Runner(agent, session)
-result = runner.run("What's the weather in Monte Cristo?")
+runner = Runner(session)
+result = runner.run(agent, "What's the weather in Monte Cristo?")
 
 # Output the result
 print("Final output:", result.final_output)
@@ -65,4 +65,76 @@ print("Final output:", result.final_output)
 for message in session.get_dialogs():
     print(message)
 ```
+
+## Multi-Agent Example
+
+AgentSilex supports intelligent agent handoffs, allowing a main agent to route requests to specialized sub-agents:
+
+```python
+from agentsilex import Agent, Runner, Session, tool
+
+# Specialized weather agent with tools
+@tool
+def get_weather(city: str) -> str:
+    """Get weather information for a city."""
+    return "SUNNY"
+
+weather_agent = Agent(
+    name="Weather Agent",
+    model="openai/gpt-4o-mini",
+    instructions="Help users find weather information using tools",
+    tools=[get_weather],
+)
+
+# Specialized FAQ agent
+faq_agent = Agent(
+    name="FAQ Agent",
+    model="openai/gpt-4o-mini",
+    instructions="Answer frequently asked questions about our products",
+)
+
+# Main orchestrator agent
+main_agent = Agent(
+    name="Main Agent",
+    model="openai/gpt-4o-mini",
+    instructions="Route user questions to the appropriate specialist agent",
+    handoffs=[weather_agent, faq_agent],
+)
+
+# Execute multi-agent workflow
+session = Session()
+result = Runner(session).run(main_agent, "What's the weather in Paris?")
+print(result.final_output)
+```
+
+## Features & Roadmap
+
+### ✅ Implemented Features
+
+#### Core Agent Capabilities
+- **Single Agent Execution** - Create and run individual agents with custom instructions
+- **Tool Calling** - Agents can call external tools/functions to perform actions
+- **Tool Definition** - Simple `@tool` decorator to define callable functions with automatic schema extraction
+- **Conversation Management** - Session-based dialog history tracking across multiple turns
+- **Multi-Agent Handoff** - Main agent can intelligently route requests to specialized sub-agents
+
+#### Technical Features
+- **Universal LLM Support** - Built on LiteLLM for seamless model switching (OpenAI, Anthropic, Google, DeepSeek, Azure, and 100+ models)
+- **Type-Safe Tool Definitions** - Automatic parameter schema extraction from Python type hints
+- **Transparent Architecture** - ~300 lines of readable, hackable code
+- **Simple API** - Intuitive `Agent`, `Runner`, `Session`, and `@tool` abstractions
+
+### 🚀 Roadmap
+
+- [ ] **Streaming Support** - Real-time response streaming for better UX
+- [ ] **Async Support** - Asynchronous execution for improved performance
+- [ ] **Tool Call Error Handling** - Graceful handling of failed tool executions
+- [ ] **Parallel Tool Execution** - Execute multiple tool calls concurrently
+- [ ] **Agent Memory** - Built-in memory management for long conversations
+- [ ] **State Persistence** - Save and restore agent sessions
+- [ ] **Agent Observability** - Built-in logging, tracing, and debugging tools
+- [ ] **Built-in Tools Library** - Common tools (web search, file operations, etc.)
+- [ ] **Custom Agent Behaviors** - Pluggable behaviors (ReAct, Chain-of-Thought, etc.)
+- [ ] **Human-in-the-Loop** - Built-in approval flows for sensitive operations
+- [ ] **Agent Evaluation Framework** - Test and evaluate agent performance
 
