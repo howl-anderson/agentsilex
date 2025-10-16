@@ -2,8 +2,14 @@ from typing import Any, List, Tuple, Dict
 from agentsilex.function_tool import FunctionTool
 import json
 import re
+import inspect
 
 HANDOFF_TOOL_PREFIX = "transfer_to_"
+
+
+def has_context_param(func):
+    sig = inspect.signature(func)
+    return "context" in sig.parameters
 
 
 def as_valid_tool_name(name: str, prefix: str | None = None) -> str:
@@ -42,13 +48,17 @@ class ToolsSet:
 
         return spec
 
-    def execute_function_call(self, call_spec):
+    def execute_function_call(self, context: dict, call_spec):
         tool = self.registry.get(call_spec.function.name)
 
         if not tool:
             raise ValueError(f"Tool {call_spec.function.name} not found")
 
         args = json.loads(call_spec.function.arguments)
+
+        # inject context if the tool supports it
+        if has_context_param(tool.function):
+            args["context"] = context
 
         result = tool(**args)
 

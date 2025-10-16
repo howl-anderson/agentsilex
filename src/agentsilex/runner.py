@@ -20,13 +20,17 @@ def bot_msg(content: str) -> dict:
 
 
 class Runner:
-    def __init__(self, session: Session):
+    def __init__(self, session: Session, context: dict | None = None):
         self.session = session
+
+        # this is the content, a dict that will be passed to tools when executed, it can be read and written by tools
+        self.context = context or {}
 
     def run(
         self,
         agent: Agent,
         prompt: str,
+        context: dict | None = None,
     ) -> RunResult:
         current_agent = agent
 
@@ -42,8 +46,6 @@ class Runner:
                 current_agent.tools_set.get_specification()
                 + current_agent.handoffs.get_specification()
             )
-
-            print(tools_spec)
 
             # because system prompt is depend on current agent,
             # so we get the full dialogs here, just before calling the model
@@ -66,7 +68,7 @@ class Runner:
 
             # deal with normal function calls firstly
             tools_response = [
-                current_agent.tools_set.execute_function_call(call_spec)
+                current_agent.tools_set.execute_function_call(self.context, call_spec)
                 for call_spec in response_message.tool_calls
                 if not call_spec.function.name.startswith(HANDOFF_TOOL_PREFIX)
             ]
