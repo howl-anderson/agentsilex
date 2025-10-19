@@ -117,6 +117,8 @@ print(result.final_output)
 - **Tool Definition** - Simple `@tool` decorator to define callable functions with automatic schema extraction
 - **Conversation Management** - Session-based dialog history tracking across multiple turns
 - **Multi-Agent Handoff** - Main agent can intelligently route requests to specialized sub-agents
+- **Agents as Tools** - Any agent can be converted into a tool for another agent with `agent.as_tool()`
+- **Context Management** - Share mutable state across tools and conversation turns
 
 #### Technical Features
 - **Universal LLM Support** - Built on LiteLLM for seamless model switching (OpenAI, Anthropic, Google, DeepSeek, Azure, and 100+ models)
