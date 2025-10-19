@@ -43,7 +43,7 @@ class FuncSchema:
         keyword_args: dict[str, Any] = {}
 
         for name, param in self.signature.parameters.items():
-            if name in ('self', 'cls'):
+            if name in ("self", "cls"):
                 continue
 
             value = getattr(data, name, None)
@@ -99,7 +99,11 @@ def function_schema(
     fields = {}
     for param_name, param in sig.parameters.items():
         # Skip self/cls parameters
-        if param_name in ('self', 'cls'):
+        if param_name in ("self", "cls"):
+            continue
+
+        # Skip context parameter, which is a reserved name for context injection
+        if param_name in ("context",):
             continue
 
         # Get type annotation (default to Any if not provided)
@@ -117,8 +121,13 @@ def function_schema(
             fields[param_name] = (base_type, Field(..., description=param_desc))
         else:
             # Optional parameter with default value
-            default_value = param.default if param.default != inspect.Parameter.empty else None
-            fields[param_name] = (base_type, Field(default=default_value, description=param_desc))
+            default_value = (
+                param.default if param.default != inspect.Parameter.empty else None
+            )
+            fields[param_name] = (
+                base_type,
+                Field(default=default_value, description=param_desc),
+            )
 
     # 5. Create dynamic Pydantic model
     if fields:
@@ -174,7 +183,7 @@ if __name__ == "__main__":
         name: str,
         age: Optional[int] = None,
         tags: List[str] = None,
-        is_active: bool = True
+        is_active: bool = True,
     ) -> dict:
         """
         Process user information.
@@ -188,15 +197,11 @@ if __name__ == "__main__":
         Returns:
             A dictionary containing processed user data
         """
-        return {
-            "name": name,
-            "age": age,
-            "tags": tags or [],
-            "is_active": is_active
-        }
+        return {"name": name, "age": age, "tags": tags or [], "is_active": is_active}
 
     # Extract schema
     schema = function_schema(example_function)
     print(f"Function: {schema.name}")
     print(f"Description: {schema.description}")
     print(f"Parameters JSON Schema: {schema.params_json_schema}")
+

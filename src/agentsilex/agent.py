@@ -134,3 +134,8 @@ class Agent:
 
     def get_system_prompt(self):
         return {"role": "system", "content": self.instructions}
+
+    def as_tool(self, tool_name: str, tool_description: str) -> FunctionTool:
+        from agentsilex.agent_as_tool import agent_as_tool
+
+        return agent_as_tool(self, tool_name, tool_description)

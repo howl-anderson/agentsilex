@@ -14,3 +14,17 @@ def tool(func: Callable) -> FunctionTool:
         function=func,
         parameters_specification=schema.params_json_schema,
     )
+
+
+def generate_tool(tool_name, tool_descrption):
+    def wraper(func: Callable):
+        schema = extract_function_schema(func)
+
+        return FunctionTool(
+            name=tool_name,
+            description=tool_descrption,
+            function=func,
+            parameters_specification=schema.params_json_schema,
+        )
+
+    return wraper
