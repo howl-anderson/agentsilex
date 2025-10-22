@@ -1,6 +1,6 @@
 [project]
 name = "agentsilex"
-version = "0.4"
+version = "0.5"
 description = "A transparent, minimal, and hackable agent framework"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -16,6 +16,8 @@ classifiers = [
 dependencies = [
   "docstring-parser>=0.17.0",
   "litellm>=1.76.2",
+  "opentelemetry-distro>=0.59b0",
+  "opentelemetry-exporter-otlp>=1.38.0",
   "pydantic>=2.11.7",
 ]
 requires-python = ">=3.12"
@@ -30,4 +32,4 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
-dev = ["pytest>=8.4.2"]
+dev = ["arize-phoenix>=12.6.1", "pytest>=8.4.2"]
