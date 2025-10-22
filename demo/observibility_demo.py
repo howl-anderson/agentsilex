@@ -1,7 +1,7 @@
-#  # 安装 phoenix server -  一个开源的 Agent Observability 平台, 支持 OpenTelemetry
+#  Install Phoenix server - an open-source Agent Observability platform with OpenTelemetry support
 #  uv sync
 #
-#  # 启动(保持运行)
+#  Start Phoenix server (keep it running)
 #  uv run python -m phoenix.server.main serve
 
 import os
