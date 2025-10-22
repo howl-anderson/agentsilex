@@ -107,6 +107,25 @@ result = Runner(session).run(main_agent, "What's the weather in Paris?")
 print(result.final_output)
 ```
 
+## Observability
+
+AgentSilex includes built-in OpenTelemetry tracing to visualize agent execution, tool calls, and handoffs.
+
+### Quick Setup with Phoenix
+
+```bash
+# Install and start Phoenix
+pip install arize-phoenix
+python -m phoenix.server.main serve
+
+# Set the endpoint
+export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4317"
+
+# Run your agent - view traces at http://localhost:6006
+```
+
+Phoenix will show a complete trace tree of your agent workflow, including all tool calls and agent handoffs.
+
 ## Features & Roadmap
 
 ### ✅ Implemented Features
@@ -125,6 +144,7 @@ print(result.final_output)
 - **Type-Safe Tool Definitions** - Automatic parameter schema extraction from Python type hints
 - **Transparent Architecture** - ~300 lines of readable, hackable code
 - **Simple API** - Intuitive `Agent`, `Runner`, `Session`, and `@tool` abstractions
+- **OpenTelemetry Observability** - Built-in tracing compatible with Phoenix and other OTLP backends
 
 ### 🚀 Roadmap
 
@@ -134,7 +154,6 @@ print(result.final_output)
 - [ ] **Parallel Tool Execution** - Execute multiple tool calls concurrently
 - [ ] **Agent Memory** - Built-in memory management for long conversations
 - [ ] **State Persistence** - Save and restore agent sessions
-- [ ] **Agent Observability** - Built-in logging, tracing, and debugging tools
 - [ ] **Built-in Tools Library** - Common tools (web search, file operations, etc.)
 - [ ] **Custom Agent Behaviors** - Pluggable behaviors (ReAct, Chain-of-Thought, etc.)
 - [ ] **Human-in-the-Loop** - Built-in approval flows for sensitive operations
