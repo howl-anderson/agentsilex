@@ -1,6 +1,6 @@
 [project]
 name = "agentsilex"
-version = "0.5"
+version = "0.6"
 description = "A transparent, minimal, and hackable agent framework"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -16,6 +16,7 @@ classifiers = [
 dependencies = [
   "docstring-parser>=0.17.0",
   "litellm>=1.76.2",
+  "mcp>=1.19.0",
   "opentelemetry-distro>=0.59b0",
   "opentelemetry-exporter-otlp>=1.38.0",
   "pydantic>=2.11.7",
