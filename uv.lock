@@ -10,7 +10,7 @@ resolution-markers = [
 
 [[package]]
 name = "agentsilex"
-version = "0.6"
+version = "0.7"
 source = { editable = "." }
 dependencies = [
     { name = "docstring-parser" },
