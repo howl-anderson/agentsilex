@@ -33,17 +33,23 @@ span_manager = SpanManager()
 
 
 class Runner:
-    def __init__(self, session: Session, context: dict | None = None):
+    def __init__(
+        self,
+        session: Session,
+        context: dict | None = None,
+        before_llm_call_callbacks: list | None = None,
+    ):
         self.session = session
 
         # this is the content, a dict that will be passed to tools when executed, it can be read and written by tools
         self.context = context or {}
 
+        self.before_llm_call_callbacks = before_llm_call_callbacks or []
+
     def run(
         self,
         agent: Agent,
         prompt: str,
-        context: dict | None = None,
     ) -> RunResult:
         with span("workflow_run", run_id=str(uuid.uuid4())):
             span_manager.switch_to(f"agent_{agent.name}", agent=agent.name)
@@ -56,6 +62,10 @@ class Runner:
             loop_count = 0
             should_stop = False
             while loop_count < 10 and not should_stop:
+                # callbacks before LLM call
+                for callback_func in self.before_llm_call_callbacks:
+                    callback_func(self.session)
+
                 dialogs = self.session.get_dialogs()
 
                 tools_spec = (
@@ -66,6 +76,7 @@ class Runner:
                 # because system prompt is depend on current agent,
                 # so we get the full dialogs here, just before calling the model
                 complete_dialogs = [current_agent.get_system_prompt()] + dialogs
+
                 response = completion(
                     model=current_agent.model,
                     messages=complete_dialogs,
