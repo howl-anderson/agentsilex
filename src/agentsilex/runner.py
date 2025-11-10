@@ -1,9 +1,12 @@
 import json
 import uuid
-from typing import Dict
+import collections
+from typing import Dict, Generator, List
+from litellm import stream_chunk_builder
 
 from dotenv import load_dotenv
 from litellm import completion
+from litellm.types.utils import ChatCompletionMessageToolCall, Function
 
 from agentsilex.agent import Agent, HANDOFF_TOOL_PREFIX
 from agentsilex.run_result import RunResult
@@ -13,6 +16,15 @@ from agentsilex.observability import (
     setup_tracer_provider,
     span,
     SpanManager,
+)
+from agentsilex.stream_event import (
+    Event,
+    PartialOutputEvent,
+    RawChunkEvent,
+    FinalResultEvent,
+    AgentHandoffEvent,
+    ToolCallEvent,
+    ToolResponseEvent,
 )
 
 load_dotenv()
@@ -97,6 +109,7 @@ class Runner:
 
                 # deal with normal function calls firstly
                 tools_response = []
+
                 for call_spec in response_message.tool_calls:
                     if call_spec.function.name.startswith(HANDOFF_TOOL_PREFIX):
                         continue
@@ -145,3 +158,151 @@ class Runner:
         self, function_call_response_list
     ) -> Dict[str, str]:
         return user_msg(json.dumps(function_call_response_list))
+
+    def convert_to_tool_call_spec_list(
+        self, items
+    ) -> List[ChatCompletionMessageToolCall]:
+        ans = []
+
+        for data in items.values():
+            func = Function(
+                name=data["name"],
+                arguments=data["arguments"],
+            )
+            call_spec = ChatCompletionMessageToolCall(
+                id=data["id"], function=func, type="function"
+            )
+            ans.append(call_spec)
+
+        return ans
+
+    def run_stream(
+        self,
+        agent: Agent,
+        prompt: str,
+    ) -> Generator[Event, None, None]:
+        with span("workflow_run", run_id=str(uuid.uuid4())):
+            span_manager.switch_to(f"agent_{agent.name}", agent=agent.name)
+
+            current_agent = agent
+
+            msg = user_msg(prompt)
+            self.session.add_new_messages([msg])
+
+            loop_count = 0
+            should_stop = False
+            while loop_count < 10 and not should_stop:
+                # callbacks before LLM call
+                for callback_func in self.before_llm_call_callbacks:
+                    callback_func(self.session)
+
+                dialogs = self.session.get_dialogs()
+
+                tools_spec = (
+                    current_agent.tools_set.get_specification()
+                    + current_agent.handoffs.get_specification()
+                )
+
+                # because system prompt is depend on current agent,
+                # so we get the full dialogs here, just before calling the model
+                complete_dialogs = [current_agent.get_system_prompt()] + dialogs
+
+                stream = completion(
+                    model=current_agent.model,
+                    messages=complete_dialogs,
+                    tools=tools_spec if tools_spec else None,
+                    stream=True,
+                )
+
+                chunks = []
+                partial_tool_calls = collections.defaultdict(
+                    lambda: {"id": "", "name": "", "arguments": ""}
+                )
+
+                for chunk in stream:
+                    chunks.append(chunk)
+
+                    yield RawChunkEvent(chunk)
+
+                    delta = chunk.choices[0].delta
+
+                    delta_msg = delta.content
+                    if delta_msg:
+                        yield PartialOutputEvent(delta_msg)
+
+                    if hasattr(delta, "tool_calls") and delta.tool_calls:
+                        for tc_delta in delta.tool_calls:
+                            idx = tc_delta.index or 0
+                            if hasattr(tc_delta, "id") and tc_delta.id:
+                                partial_tool_calls[idx]["id"] = tc_delta.id
+                            if tc_delta.function and tc_delta.function.name:
+                                partial_tool_calls[idx]["name"] = tc_delta.function.name
+                            if tc_delta.function and tc_delta.function.arguments:
+                                partial_tool_calls[idx][
+                                    "arguments"
+                                ] += tc_delta.function.arguments
+
+                response_restored = stream_chunk_builder(chunks)
+                response_message = response_restored.choices[0].message
+                self.session.add_new_messages([response_message])
+
+                if not partial_tool_calls:
+                    span_manager.end_current()
+
+                    should_stop = True
+                    yield FinalResultEvent(
+                        final_output=response_message,
+                    )
+
+                tool_calls = self.convert_to_tool_call_spec_list(partial_tool_calls)
+
+                # deal with normal function calls firstly
+                tools_response = []
+                for call_spec in tool_calls:
+                    if call_spec.function.name.startswith(HANDOFF_TOOL_PREFIX):
+                        continue
+
+                    with span(
+                        f"function_call_{call_spec.function.name}",
+                        function=call_spec.function.name,
+                    ):
+                        yield ToolCallEvent(func_request=call_spec)
+                        call_result = current_agent.tools_set.execute_function_call(
+                            self.context, call_spec
+                        )
+                        tools_response.append(call_result)
+                        yield ToolResponseEvent(call_result)
+
+                self.session.add_new_messages(tools_response)
+
+                # then deal with agent handoff calls sencondly
+                handoff_responses = [
+                    call_spec
+                    for call_spec in tool_calls
+                    if call_spec.function.name.startswith(HANDOFF_TOOL_PREFIX)
+                ]
+                if handoff_responses:
+                    # if there are multiple handoff, just pick the first one
+                    agent_spec = handoff_responses[0]
+
+                    agent_name = agent_spec.function.name[len(HANDOFF_TOOL_PREFIX) :]
+                    span_manager.switch_to(
+                        f"agent_{agent_name}",
+                        agent=agent_name,
+                    )
+
+                    yield AgentHandoffEvent(agent_name=agent_name)
+
+                    current_agent, handoff_response = (
+                        current_agent.handoffs.handoff_agent(agent_spec)
+                    )
+                    self.session.add_new_messages([handoff_response])
+
+                loop_count += 1
+
+            span_manager.end_current()
+
+            if loop_count >= 10:
+                yield FinalResultEvent(
+                    final_output="Error: Exceeded max iterations",
+                )

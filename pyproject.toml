@@ -1,6 +1,6 @@
 [project]
 name = "agentsilex"
-version = "0.7"
+version = "0.8"
 description = "A transparent, minimal, and hackable agent framework"
 readme = "README.md"
 license = { file = "LICENSE" }
