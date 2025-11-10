@@ -21,9 +21,9 @@ While large agent frameworks offer extensive features, they often become black b
 
 ## Demo
 
-<video src="media/agentsilex_streaming_demo.mp4" loop autoplay muted playsinline controls width="100%">
-  Your browser does not support the video tag.
-</video>
+![AgentSilex Streaming Demo](media/agentsilex_streaming_demo.webp)
+
+*Real-time streaming response demonstration - see how AgentSilex processes queries and streams results*
 
 ## Installation
 
