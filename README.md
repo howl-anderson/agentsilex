@@ -19,6 +19,12 @@ While large agent frameworks offer extensive features, they often become black b
 - **Educators** teaching AI agent concepts
 - **Researchers** prototyping new agent architectures
 
+## Demo
+
+<video src="media/agentsilex_streaming_demo.mp4" loop autoplay muted playsinline controls width="100%">
+  Your browser does not support the video tag.
+</video>
+
 ## Installation
 
 ```bash
@@ -145,17 +151,18 @@ Phoenix will show a complete trace tree of your agent workflow, including all to
 - **Transparent Architecture** - ~300 lines of readable, hackable code
 - **Simple API** - Intuitive `Agent`, `Runner`, `Session`, and `@tool` abstractions
 - **OpenTelemetry Observability** - Built-in tracing compatible with Phoenix and other OTLP backends
+- **Streaming Support** - Real-time response streaming with event-based architecture for better UX
+- **Agent Memory** - Callback-based memory management for conversation history control
+- **MCP Client Support** - Connect to Model Context Protocol servers to extend agent capabilities with external tools
+- **Custom Agent Behaviors** - Pluggable callback system for implementing custom behaviors (ReAct, Chain-of-Thought, logging, etc.)
 
 ### 🚀 Roadmap
 
-- [ ] **Streaming Support** - Real-time response streaming for better UX
 - [ ] **Async Support** - Asynchronous execution for improved performance
 - [ ] **Tool Call Error Handling** - Graceful handling of failed tool executions
 - [ ] **Parallel Tool Execution** - Execute multiple tool calls concurrently
-- [ ] **Agent Memory** - Built-in memory management for long conversations
 - [ ] **State Persistence** - Save and restore agent sessions
 - [ ] **Built-in Tools Library** - Common tools (web search, file operations, etc.)
-- [ ] **Custom Agent Behaviors** - Pluggable behaviors (ReAct, Chain-of-Thought, etc.)
 - [ ] **Human-in-the-Loop** - Built-in approval flows for sensitive operations
 - [ ] **Agent Evaluation Framework** - Test and evaluate agent performance
 

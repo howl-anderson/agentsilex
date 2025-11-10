@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentSilex Demo - Interactive AI Assistant</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Highlight.js for code syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <style>
+        /* Custom scrollbar */
+        .chat-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .chat-container::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+        .chat-container::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 4px;
+        }
+        .chat-container::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+
+        /* Typing animation */
+        .typing-indicator {
+            display: inline-block;
+            animation: blink 1.4s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+
+        /* Smooth message appearance */
+        .message-item {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Tool call pulse animation */
+        @keyframes pulse-border {
+            0%, 100% { border-color: #3b82f6; }
+            50% { border-color: #60a5fa; }
+        }
+        .tool-calling {
+            animation: pulse-border 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-gray-800 border-b border-gray-700 px-6 py-4">
+            <div class="max-w-5xl mx-auto flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-white">AgentSilex Demo</h1>
+                    <p class="text-sm text-gray-400">Transparent, minimal, and hackable agent framework</p>
+                </div>
+                <div class="flex gap-2">
+                    <button
+                        onclick="resetChat()"
+                        class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm font-medium transition-colors">
+                        🔄 Reset Chat
+                    </button>
+                    <a
+                        href="https://github.com/howl-anderson/agentsilex"
+                        target="_blank"
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition-colors">
+                        ⭐ GitHub
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Chat Area -->
+        <main class="flex-1 overflow-hidden flex flex-col max-w-5xl w-full mx-auto">
+            <!-- Messages Container -->
+            <div id="chatContainer" class="flex-1 overflow-y-auto px-6 py-6 chat-container">
+                <!-- Welcome Message - Compact Banner -->
+                <div id="welcomeBanner" class="mb-4 px-4 py-3 bg-blue-900/30 rounded-lg border border-blue-700/40 flex items-center justify-between">
+                    <div class="flex items-center gap-3 flex-1">
+                        <span class="text-blue-400 text-lg">💡</span>
+                        <p class="text-sm text-gray-300">
+                            <span class="font-medium text-blue-300">Try:</span>
+                            "What's the weather today?" or "Calculate 123 * 456"
+                        </p>
+                    </div>
+                    <button onclick="document.getElementById('welcomeBanner').remove()" class="text-gray-500 hover:text-gray-300 text-xl leading-none px-2">
+                        ×
+                    </button>
+                </div>
+
+                <!-- Messages will appear here -->
+            </div>
+
+            <!-- Input Area -->
+            <div class="border-t border-gray-700 bg-gray-800 px-6 py-4">
+                <form id="chatForm" class="flex gap-3">
+                    <input
+                        type="text"
+                        id="messageInput"
+                        placeholder="Type your message here..."
+                        class="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400"
+                        autocomplete="off"
+                    />
+                    <button
+                        type="submit"
+                        id="sendButton"
+                        class="px-6 py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition-colors">
+                        Send
+                    </button>
+                </form>
+                <div class="mt-2 text-xs text-gray-500 text-center space-y-1">
+                    <p>Powered by AgentSilex • Streaming responses with tool call visualization</p>
+                    <p class="text-gray-600">
+                        ⓘ Tool execution delays have been added for better demo visibility (not actual speed)
+                    </p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/chat.js"></script>
+</body>
+</html>
