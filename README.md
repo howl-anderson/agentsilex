@@ -1,6 +1,13 @@
 # AgentSilex
 
+[![PyPI version](https://badge.fury.io/py/agentsilex.svg)](https://badge.fury.io/py/agentsilex)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![Downloads](https://pepy.tech/badge/agentsilex)](https://pepy.tech/project/agentsilex)
+
 A transparent, minimal, and hackable agent framework for developers who want full control.
+
+**Read the entire codebase in one sitting. Understand exactly how your agents work. No magic, no hidden complexity.**
 
 ## Why AgentSilex?
 
@@ -64,13 +71,15 @@ session = Session()
 runner = Runner(session)
 result = runner.run(agent, "What's the weather in Monte Cristo?")
 
-# Output the result
-print("Final output:", result.final_output)
-
-# Access the conversation history
-for message in session.get_dialogs():
-    print(message)
+print(result.final_output)
+# Output: "The weather in Monte Cristo is SUNNY."
 ```
+
+**That's it!** In just 20 lines, you have a working agent that:
+- ✅ Uses any LLM (OpenAI, Anthropic, Google, DeepSeek, etc.)
+- ✅ Calls tools to get information
+- ✅ Maintains conversation history
+- ✅ Returns natural language responses
 
 ## Multi-Agent Example
 

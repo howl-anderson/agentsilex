@@ -5,9 +5,8 @@ Tests end-to-end functionality for common function patterns.
 
 import pytest
 from typing import List, Optional, Union, Dict, Any
-from pydantic import ValidationError
 
-from agentsilex.extract_function_schema import function_schema, FuncSchema
+from agentsilex.extract_function_schema import extract_function_schema
 
 
 class TestFunctionSchemaExtraction:
@@ -26,14 +25,13 @@ class TestFunctionSchemaExtraction:
             """
             return f"Hello {name}, you are {age} years old"
 
-        schema = function_schema(simple_func)
+        name, description, json_schema = extract_function_schema(simple_func)
 
         # Verify basic properties
-        assert schema.name == "simple_func"
-        assert schema.description == "Create a greeting message."
+        assert name == "simple_func"
+        assert description == "Create a greeting message."
 
         # Verify JSON schema structure
-        json_schema = schema.params_json_schema
         assert json_schema["type"] == "object"
         assert "name" in json_schema["properties"]
         assert "age" in json_schema["properties"]
@@ -63,9 +61,7 @@ class TestFunctionSchemaExtraction:
             """
             return {}
 
-        schema = function_schema(func_with_optional)
-
-        json_schema = schema.params_json_schema
+        _, _, json_schema = extract_function_schema(func_with_optional)
 
         # Check required parameters
         assert "required" in json_schema
@@ -97,9 +93,7 @@ class TestFunctionSchemaExtraction:
             """
             return []
 
-        schema = function_schema(complex_types_func)
-
-        json_schema = schema.params_json_schema
+        _, _, json_schema = extract_function_schema(complex_types_func)
         props = json_schema["properties"]
 
         # Check list type
@@ -119,12 +113,10 @@ class TestFunctionSchemaExtraction:
         def no_docstring_func(param1: str, param2: int = 10):
             return param1 * param2
 
-        schema = function_schema(no_docstring_func)
+        name, description, json_schema = extract_function_schema(no_docstring_func)
 
-        assert schema.name == "no_docstring_func"
-        assert schema.description is None
-
-        json_schema = schema.params_json_schema
+        assert name == "no_docstring_func"
+        assert description is None
         assert "param1" in json_schema["properties"]
         assert "param2" in json_schema["properties"]
         assert json_schema["properties"]["param2"]["default"] == 10
@@ -142,9 +134,7 @@ class TestFunctionSchemaExtraction:
             """
             return str(param1) + str(param2)
 
-        schema = function_schema(no_types_func)
-
-        json_schema = schema.params_json_schema
+        _, _, json_schema = extract_function_schema(no_types_func)
 
         # Without type hints, parameters should still be present
         assert "param1" in json_schema["properties"]
@@ -168,9 +158,7 @@ class TestFunctionSchemaExtraction:
                 return param.upper()
 
         obj = MyClass()
-        schema = function_schema(obj.method)
-
-        json_schema = schema.params_json_schema
+        _, _, json_schema = extract_function_schema(obj.method)
 
         # 'self' should not appear in the schema
         assert "self" not in json_schema["properties"]
@@ -184,40 +172,14 @@ class TestFunctionSchemaExtraction:
             """Original description."""
             return x * 2
 
-        schema = function_schema(
+        name, description, _ = extract_function_schema(
             original_func,
             name_override="custom_name",
             description_override="Custom description"
         )
 
-        assert schema.name == "custom_name"
-        assert schema.description == "Custom description"
-
-    def test_to_call_args_conversion(self):
-        """Test converting validated data back to function call arguments."""
-
-        def test_func(pos_arg: str, keyword_arg: int = 5) -> str:
-            """Test function for argument conversion."""
-            return f"{pos_arg}-{keyword_arg}"
-
-        schema = function_schema(test_func)
-
-        # Create an instance of the Pydantic model with test data
-        model_instance = schema.params_pydantic_model(
-            pos_arg="test",
-            keyword_arg=10
-        )
-
-        # Convert to call arguments
-        args, kwargs = schema.to_call_args(model_instance)
-
-        # For POSITIONAL_OR_KEYWORD parameters, they should be in positional args
-        assert args == ["test", 10]
-        assert kwargs == {}
-
-        # Verify the function can be called with these arguments
-        result = test_func(*args, **kwargs)
-        assert result == "test-10"
+        assert name == "custom_name"
+        assert description == "Custom description"
 
     def test_function_with_no_parameters(self):
         """Test extraction for a function with no parameters."""
@@ -226,54 +188,13 @@ class TestFunctionSchemaExtraction:
             """Function with no parameters."""
             return "result"
 
-        schema = function_schema(no_params_func)
+        name, description, json_schema = extract_function_schema(no_params_func)
 
-        assert schema.name == "no_params_func"
-        assert schema.description == "Function with no parameters."
-
-        json_schema = schema.params_json_schema
+        assert name == "no_params_func"
+        assert description == "Function with no parameters."
         assert json_schema["type"] == "object"
         assert json_schema["properties"] == {}
         assert json_schema.get("required", []) == []
-
-    def test_pydantic_model_validation(self):
-        """Test that the generated Pydantic model performs validation correctly."""
-
-        def validated_func(
-            name: str,
-            age: int,
-            email: Optional[str] = None
-        ) -> dict:
-            """
-            Function with validation requirements.
-
-            Args:
-                name: User's name (required)
-                age: User's age (required)
-                email: User's email (optional)
-            """
-            return {"name": name, "age": age, "email": email}
-
-        schema = function_schema(validated_func)
-
-        # Valid data should work
-        valid_data = schema.params_pydantic_model(
-            name="Alice",
-            age=30,
-            email="alice@example.com"
-        )
-        assert valid_data.name == "Alice"
-        assert valid_data.age == 30
-        assert valid_data.email == "alice@example.com"
-
-        # Missing required field should raise ValidationError
-        with pytest.raises(ValidationError):
-            schema.params_pydantic_model(name="Bob")  # Missing 'age'
-
-        # Wrong type should raise ValidationError
-        with pytest.raises(ValidationError):
-            schema.params_pydantic_model(name="Charlie", age="not_an_int")
-
 
 class TestGoogleStyleDocstring:
     """Test Google-style docstring parsing."""
@@ -300,11 +221,9 @@ class TestGoogleStyleDocstring:
             """
             return f"{param1}-{param2}"
 
-        schema = function_schema(google_style_func)
+        _, description, json_schema = extract_function_schema(google_style_func)
 
-        assert schema.description == "This is a summary line."
-
-        json_schema = schema.params_json_schema
+        assert description == "This is a summary line."
         assert json_schema["properties"]["param1"]["description"] == "Description of param1"
         assert json_schema["properties"]["param2"]["description"] == "Description of param2 with default"
 
@@ -338,11 +257,9 @@ class TestNumpyStyleDocstring:
             """
             return f"{param1}-{param2}"
 
-        schema = function_schema(numpy_style_func)
+        _, description, json_schema = extract_function_schema(numpy_style_func)
 
-        assert schema.description == "This is a summary line."
-
-        json_schema = schema.params_json_schema
+        assert description == "This is a summary line."
         assert json_schema["properties"]["param1"]["description"] == "Description of param1"
         assert json_schema["properties"]["param2"]["description"] == "Description of param2 with default"
 

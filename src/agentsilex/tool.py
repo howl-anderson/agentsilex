@@ -1,30 +1,28 @@
 from typing import Callable
 from agentsilex.function_tool import FunctionTool
-from agentsilex.extract_function_schema import (
-    function_schema as extract_function_schema,
-)
+from agentsilex.extract_function_schema import extract_function_schema
 
 
 def tool(func: Callable) -> FunctionTool:
-    schema = extract_function_schema(func)
+    name, description, params_json_schema = extract_function_schema(func)
 
     return FunctionTool(
-        name=schema.name,
-        description=schema.description or "",
+        name=name,
+        description=description or "",
         function=func,
-        parameters_specification=schema.params_json_schema,
+        parameters_specification=params_json_schema,
     )
 
 
-def generate_tool(tool_name, tool_descrption):
-    def wraper(func: Callable):
-        schema = extract_function_schema(func)
+def generate_tool(tool_name, tool_description):
+    def wrapper(func: Callable):
+        _, _, params_json_schema = extract_function_schema(func)
 
         return FunctionTool(
             name=tool_name,
-            description=tool_descrption,
+            description=tool_description,
             function=func,
-            parameters_specification=schema.params_json_schema,
+            parameters_specification=params_json_schema,
         )
 
-    return wraper
+    return wrapper

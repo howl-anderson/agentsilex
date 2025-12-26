@@ -6,66 +6,19 @@ Uses docstring_parser and pydantic for clean, maintainable implementation.
 from __future__ import annotations
 
 import inspect
-from dataclasses import dataclass
 from typing import Any, Optional, Union, get_args, get_origin, get_type_hints
 
 from docstring_parser import parse
 from pydantic import BaseModel, Field, create_model
 
 
-@dataclass
-class FuncSchema:
-    """
-    Captures the schema for a python function, in preparation for sending it to an LLM as a tool.
-    """
-
-    name: str
-    """The name of the function."""
-
-    description: str | None
-    """The description of the function."""
-
-    params_pydantic_model: type[BaseModel]
-    """A Pydantic model that represents the function's parameters."""
-
-    params_json_schema: dict[str, Any]
-    """The JSON schema for the function's parameters, derived from the Pydantic model."""
-
-    signature: inspect.Signature
-    """The signature of the function."""
-
-    def to_call_args(self, data: BaseModel) -> tuple[list[Any], dict[str, Any]]:
-        """
-        Converts validated data from the Pydantic model into (args, kwargs), suitable for calling
-        the original function.
-        """
-        positional_args: list[Any] = []
-        keyword_args: dict[str, Any] = {}
-
-        for name, param in self.signature.parameters.items():
-            if name in ("self", "cls"):
-                continue
-
-            value = getattr(data, name, None)
-
-            # Handle based on parameter kind
-            if param.kind in (param.POSITIONAL_ONLY, param.POSITIONAL_OR_KEYWORD):
-                positional_args.append(value)
-            else:
-                # For KEYWORD_ONLY parameters
-                keyword_args[name] = value
-
-        return positional_args, keyword_args
-
-
-def function_schema(
+def extract_function_schema(
     func: Any,
     name_override: str | None = None,
     description_override: str | None = None,
-) -> FuncSchema:
+) -> tuple[str, str | None, dict[str, Any]]:
     """
-    Given a Python function, extracts a `FuncSchema` from it, capturing the name, description,
-    parameter descriptions, and other metadata.
+    Given a Python function, extracts schema information for LLM function calling.
 
     This simplified version:
     - Uses docstring_parser for automatic format detection (Google/Numpy/ReST)
@@ -79,7 +32,7 @@ def function_schema(
         description_override: If provided, use this description instead of the one from docstring.
 
     Returns:
-        A `FuncSchema` object containing the function's metadata and JSON schema.
+        A tuple of (name, description, params_json_schema).
     """
     # 1. Basic information
     func_name = name_override or func.__name__
@@ -139,14 +92,7 @@ def function_schema(
     # 6. Generate JSON schema
     json_schema = dynamic_model.model_json_schema()
 
-    # 7. Return FuncSchema
-    return FuncSchema(
-        name=func_name,
-        description=description,
-        params_pydantic_model=dynamic_model,
-        params_json_schema=json_schema,
-        signature=sig,
-    )
+    return func_name, description, json_schema
 
 
 def _unwrap_optional(type_hint: Any) -> tuple[bool, Any]:
@@ -200,8 +146,7 @@ if __name__ == "__main__":
         return {"name": name, "age": age, "tags": tags or [], "is_active": is_active}
 
     # Extract schema
-    schema = function_schema(example_function)
-    print(f"Function: {schema.name}")
-    print(f"Description: {schema.description}")
-    print(f"Parameters JSON Schema: {schema.params_json_schema}")
-
+    name, description, params_json_schema = extract_function_schema(example_function)
+    print(f"Function: {name}")
+    print(f"Description: {description}")
+    print(f"Parameters JSON Schema: {params_json_schema}")

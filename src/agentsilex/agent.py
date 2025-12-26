@@ -108,12 +108,12 @@ class AgentHandoffs:
     def handoff_agent(self, call_spec) -> Tuple["Agent", Dict]:
         handoff = self.registry[call_spec.function.name]
 
-        handoff_reponse = {
+        handoff_response = {
             "role": "tool",
             "tool_call_id": call_spec.id,
             "content": json.dumps({"assistant": handoff.agent.name}),
         }
-        return handoff.agent, handoff_reponse
+        return handoff.agent, handoff_response
 
 
 class Agent:

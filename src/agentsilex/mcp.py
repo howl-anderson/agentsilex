@@ -43,12 +43,12 @@ class MCPTools:
 
     def _build_mcp_func(self, mcp_tools: List[mcp_types.Tool]) -> List[FunctionTool]:
         def func_maker(mcp_tool: mcp_types.Tool) -> FunctionTool:
-            def wrapper(**kwwargs):
+            def wrapper(**kwargs):
                 async def run():
                     async with stdio_client(self.server_params) as (read, write):
                         async with ClientSession(read, write) as session:
                             await session.initialize()
-                            result = await session.call_tool(mcp_tool.name, kwwargs)
+                            result = await session.call_tool(mcp_tool.name, kwargs)
                             return result
 
                 return asyncio.run(run())
