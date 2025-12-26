@@ -7,7 +7,7 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from mcp import types as mcp_types
 
-from agentsilex.mcp import mcp_tool_as_function_tool, MCPTools, mcp_tools
+from agentsilex.mcp import mcp_tool_as_function_tool, MCPTools
 
 
 class TestMCPToolConversion:
@@ -24,8 +24,8 @@ class TestMCPToolConversion:
                 "properties": {
                     "param1": {"type": "string", "description": "First parameter"}
                 },
-                "required": ["param1"]
-            }
+                "required": ["param1"],
+            },
         )
 
         # Create a simple callable
@@ -45,39 +45,33 @@ class TestMCPToolConversion:
 class TestMCPTools:
     """Test MCPTools class functionality."""
 
-    @patch('agentsilex.mcp.stdio_client')
-    @patch('agentsilex.mcp.ClientSession')
+    @patch("agentsilex.mcp.stdio_client")
+    @patch("agentsilex.mcp.ClientSession")
     def test_get_tools_from_mcp_server(self, mock_session_class, mock_stdio):
         """Test retrieving tools from MCP server."""
         # Mock the MCP server response
         mock_tool = mcp_types.Tool(
             name="example_tool",
             description="Example tool from server",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "text": {"type": "string"}
-                }
-            }
+            inputSchema={"type": "object", "properties": {"text": {"type": "string"}}},
         )
 
         # Setup mocks
         mock_session = AsyncMock()
         mock_session.initialize = AsyncMock()
-        mock_session.list_tools = AsyncMock(
-            return_value=MagicMock(tools=[mock_tool])
+        mock_session.list_tools = AsyncMock(return_value=MagicMock(tools=[mock_tool]))
+        mock_session_class.return_value.__aenter__ = AsyncMock(
+            return_value=mock_session
         )
-        mock_session_class.return_value.__aenter__ = AsyncMock(return_value=mock_session)
         mock_session_class.return_value.__aexit__ = AsyncMock(return_value=None)
 
-        mock_stdio.return_value.__aenter__ = AsyncMock(return_value=(MagicMock(), MagicMock()))
+        mock_stdio.return_value.__aenter__ = AsyncMock(
+            return_value=(MagicMock(), MagicMock())
+        )
         mock_stdio.return_value.__aexit__ = AsyncMock(return_value=None)
 
         # Create MCPTools instance
-        server_params = {
-            "command": "test",
-            "args": []
-        }
+        server_params = {"command": "test", "args": []}
         mcp_tools_instance = MCPTools(server_params)
 
         # Get tools
@@ -88,26 +82,28 @@ class TestMCPTools:
         assert tools[0].name == "example_tool"
         assert tools[0].description == "Example tool from server"
 
-    @patch('agentsilex.mcp.stdio_client')
-    @patch('agentsilex.mcp.ClientSession')
+    @patch("agentsilex.mcp.stdio_client")
+    @patch("agentsilex.mcp.ClientSession")
     def test_tools_cached_after_first_call(self, mock_session_class, mock_stdio):
         """Test that tools are cached and not re-fetched on subsequent calls."""
         # Setup mocks with a non-empty tool
         mock_tool = mcp_types.Tool(
             name="cached_tool",
             description="Tool for cache test",
-            inputSchema={"type": "object", "properties": {}}
+            inputSchema={"type": "object", "properties": {}},
         )
 
         mock_session = AsyncMock()
         mock_session.initialize = AsyncMock()
-        mock_session.list_tools = AsyncMock(
-            return_value=MagicMock(tools=[mock_tool])
+        mock_session.list_tools = AsyncMock(return_value=MagicMock(tools=[mock_tool]))
+        mock_session_class.return_value.__aenter__ = AsyncMock(
+            return_value=mock_session
         )
-        mock_session_class.return_value.__aenter__ = AsyncMock(return_value=mock_session)
         mock_session_class.return_value.__aexit__ = AsyncMock(return_value=None)
 
-        mock_stdio.return_value.__aenter__ = AsyncMock(return_value=(MagicMock(), MagicMock()))
+        mock_stdio.return_value.__aenter__ = AsyncMock(
+            return_value=(MagicMock(), MagicMock())
+        )
         mock_stdio.return_value.__aexit__ = AsyncMock(return_value=None)
 
         # Create instance and call get_tools twice

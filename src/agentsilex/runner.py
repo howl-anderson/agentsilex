@@ -107,7 +107,9 @@ class Runner:
 
                     if current_agent.output_type:
                         return RunResult(
-                            final_output=current_agent.output_type.model_validate_json(response_message.content)
+                            final_output=current_agent.output_type.model_validate_json(
+                                response_message.content
+                            )
                         )
                     else:
                         return RunResult(
@@ -246,9 +248,9 @@ class Runner:
                             if tc_delta.function and tc_delta.function.name:
                                 partial_tool_calls[idx]["name"] = tc_delta.function.name
                             if tc_delta.function and tc_delta.function.arguments:
-                                partial_tool_calls[idx][
-                                    "arguments"
-                                ] += tc_delta.function.arguments
+                                partial_tool_calls[idx]["arguments"] += (
+                                    tc_delta.function.arguments
+                                )
 
                 response_restored = stream_chunk_builder(chunks)
                 response_message = response_restored.choices[0].message

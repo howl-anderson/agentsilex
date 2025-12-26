@@ -32,4 +32,3 @@ print("Final output:", result.final_output)
 print("\n=== Dialog History (showing tool call) ===")
 for msg in session.get_dialogs():
     print(msg)
-

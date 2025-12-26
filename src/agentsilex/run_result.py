@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Union, Any
+from typing import Any
 
 
 class RunResult(BaseModel):

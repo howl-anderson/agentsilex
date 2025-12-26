@@ -49,7 +49,7 @@ class TestFunctionSchemaExtraction:
         def func_with_optional(
             required_param: str,
             optional_param: Optional[int] = None,
-            default_param: bool = True
+            default_param: bool = True,
         ) -> dict:
             """
             Function with mixed parameter types.
@@ -81,7 +81,7 @@ class TestFunctionSchemaExtraction:
         def complex_types_func(
             items: List[str],
             mapping: Dict[str, int],
-            union_param: Union[str, int] = "default"
+            union_param: Union[str, int] = "default",
         ) -> List[Dict[str, Any]]:
             """
             Handle complex types.
@@ -175,7 +175,7 @@ class TestFunctionSchemaExtraction:
         name, description, _ = extract_function_schema(
             original_func,
             name_override="custom_name",
-            description_override="Custom description"
+            description_override="Custom description",
         )
 
         assert name == "custom_name"
@@ -196,16 +196,14 @@ class TestFunctionSchemaExtraction:
         assert json_schema["properties"] == {}
         assert json_schema.get("required", []) == []
 
+
 class TestGoogleStyleDocstring:
     """Test Google-style docstring parsing."""
 
     def test_google_style_parsing(self):
         """Test that Google-style docstrings are parsed correctly."""
 
-        def google_style_func(
-            param1: str,
-            param2: int = 10
-        ) -> str:
+        def google_style_func(param1: str, param2: int = 10) -> str:
             """
             This is a summary line.
 
@@ -224,8 +222,14 @@ class TestGoogleStyleDocstring:
         _, description, json_schema = extract_function_schema(google_style_func)
 
         assert description == "This is a summary line."
-        assert json_schema["properties"]["param1"]["description"] == "Description of param1"
-        assert json_schema["properties"]["param2"]["description"] == "Description of param2 with default"
+        assert (
+            json_schema["properties"]["param1"]["description"]
+            == "Description of param1"
+        )
+        assert (
+            json_schema["properties"]["param2"]["description"]
+            == "Description of param2 with default"
+        )
 
 
 class TestNumpyStyleDocstring:
@@ -234,10 +238,7 @@ class TestNumpyStyleDocstring:
     def test_numpy_style_parsing(self):
         """Test that Numpy-style docstrings are parsed correctly."""
 
-        def numpy_style_func(
-            param1: str,
-            param2: int = 10
-        ) -> str:
+        def numpy_style_func(param1: str, param2: int = 10) -> str:
             """
             This is a summary line.
 
@@ -260,8 +261,14 @@ class TestNumpyStyleDocstring:
         _, description, json_schema = extract_function_schema(numpy_style_func)
 
         assert description == "This is a summary line."
-        assert json_schema["properties"]["param1"]["description"] == "Description of param1"
-        assert json_schema["properties"]["param2"]["description"] == "Description of param2 with default"
+        assert (
+            json_schema["properties"]["param1"]["description"]
+            == "Description of param1"
+        )
+        assert (
+            json_schema["properties"]["param2"]["description"]
+            == "Description of param2 with default"
+        )
 
 
 if __name__ == "__main__":

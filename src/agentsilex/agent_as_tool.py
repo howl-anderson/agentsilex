@@ -4,7 +4,6 @@ from agentsilex.tool import generate_tool
 
 
 def agent_as_tool(agent, tool_name: str, tool_description: str) -> FunctionTool:
-
     @generate_tool(tool_name, tool_description)
     def agent_tool(input: str, context) -> str:
         # create an in-memory session, which will be temprary for this function call
