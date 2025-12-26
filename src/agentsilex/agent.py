@@ -1,5 +1,6 @@
-from typing import Any, List, Tuple, Dict
+from typing import Any, List, Tuple, Dict, Type
 from agentsilex.function_tool import FunctionTool
+from pydantic import BaseModel
 import json
 import re
 import inspect
@@ -124,6 +125,7 @@ class Agent:
         instructions: str,
         tools: List[FunctionTool] | None = None,
         handoffs: List["Agent"] | None = None,
+        output_type: Type[BaseModel] | None = None,
     ):
         self.name = name
         self.model = model
@@ -131,6 +133,7 @@ class Agent:
         self.tools = tools or []
         self.tools_set = ToolsSet(self.tools)
         self.handoffs = AgentHandoffs(handoffs or [])
+        self.output_type = output_type
 
     def get_system_prompt(self):
         return {"role": "system", "content": self.instructions}

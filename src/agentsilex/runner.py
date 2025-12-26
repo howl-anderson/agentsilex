@@ -93,6 +93,7 @@ class Runner:
                     model=current_agent.model,
                     messages=complete_dialogs,
                     tools=tools_spec if tools_spec else None,
+                    response_format=current_agent.output_type,
                 )
 
                 response_message = response.choices[0].message
@@ -103,9 +104,15 @@ class Runner:
                     span_manager.end_current()
 
                     should_stop = True
-                    return RunResult(
-                        final_output=response_message.content,
-                    )
+
+                    if current_agent.output_type:
+                        return RunResult(
+                            final_output=current_agent.output_type.model_validate_json(response_message.content)
+                        )
+                    else:
+                        return RunResult(
+                            final_output=response_message.content,
+                        )
 
                 # deal with normal function calls firstly
                 tools_response = []
@@ -211,6 +218,7 @@ class Runner:
                     model=current_agent.model,
                     messages=complete_dialogs,
                     tools=tools_spec if tools_spec else None,
+                    response_format=current_agent.output_type,
                     stream=True,
                 )
 
@@ -250,9 +258,16 @@ class Runner:
                     span_manager.end_current()
 
                     should_stop = True
-                    yield FinalResultEvent(
-                        final_output=response_message,
-                    )
+                    if current_agent.output_type:
+                        yield FinalResultEvent(
+                            final_output=current_agent.output_type.model_validate_json(
+                                response_message.content
+                            ),
+                        )
+                    else:
+                        yield FinalResultEvent(
+                            final_output=response_message.content,
+                        )
 
                 tool_calls = self.convert_to_tool_call_spec_list(partial_tool_calls)
 

@@ -156,6 +156,7 @@ Phoenix will show a complete trace tree of your agent workflow, including all to
 
 #### Technical Features
 - **Universal LLM Support** - Built on LiteLLM for seamless model switching (OpenAI, Anthropic, Google, DeepSeek, Azure, and 100+ models)
+- **Structured Output** - Define Pydantic models for type-safe, validated responses
 - **Type-Safe Tool Definitions** - Automatic parameter schema extraction from Python type hints
 - **Transparent Architecture** - ~300 lines of readable, hackable code
 - **Simple API** - Intuitive `Agent`, `Runner`, `Session`, and `@tool` abstractions
