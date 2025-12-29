@@ -16,5 +16,6 @@ jobs:
           python-version: '3.12'
       - uses: astral-sh/setup-uv@v4
       - run: uv sync
+      - run: uv tool install ruff
       - run: ruff check src/ tests/ demo/
       - run: uv run pytest
