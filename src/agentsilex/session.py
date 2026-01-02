@@ -11,8 +11,5 @@ class Session:
     def add_new_messages(self, messages):
         self.dialogs.extend(messages)
 
-    def pop_turn(self):
-        pass
-
     def clean(self):
         self.dialogs = []

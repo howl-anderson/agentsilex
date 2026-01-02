@@ -73,6 +73,7 @@ class Runner:
 
             loop_count = 0
             should_stop = False
+            tools_usage = []
             while loop_count < 10 and not should_stop:
                 # callbacks before LLM call
                 for callback_func in self.before_llm_call_callbacks:
@@ -106,15 +107,22 @@ class Runner:
                     should_stop = True
 
                     if current_agent.output_type:
-                        return RunResult(
+                        run_result = RunResult(
                             final_output=current_agent.output_type.model_validate_json(
                                 response_message.content
-                            )
+                            ),
+                            function_calls=tools_usage,
+                            last_agent=current_agent,
                         )
                     else:
-                        return RunResult(
+                        run_result = RunResult(
                             final_output=response_message.content,
+                            function_calls=tools_usage,
+                            last_agent=current_agent,
                         )
+
+                    tools_usage = []  # reset tools usage for next run
+                    return run_result
 
                 # deal with normal function calls firstly
                 tools_response = []
@@ -127,9 +135,18 @@ class Runner:
                         f"function_call_{call_spec.function.name}",
                         function=call_spec.function.name,
                     ):
-                        tools_response.append(
+                        current_tool_response = (
                             current_agent.tools_set.execute_function_call(
                                 self.context, call_spec
+                            )
+                        )
+                        tools_response.append(current_tool_response)
+
+                        tools_usage.append(
+                            (
+                                call_spec.function.name,
+                                call_spec.function.arguments,
+                                current_tool_response,
                             )
                         )
 
@@ -154,6 +171,15 @@ class Runner:
                     current_agent, handoff_response = (
                         current_agent.handoffs.handoff_agent(agent_spec)
                     )
+
+                    tools_usage.append(
+                        (
+                            agent_spec.function.name,
+                            {},
+                            handoff_response,
+                        )
+                    )
+
                     self.session.add_new_messages([handoff_response])
 
                 loop_count += 1
@@ -161,6 +187,8 @@ class Runner:
             span_manager.end_current()
             return RunResult(
                 final_output="Error: Exceeded max iterations",
+                function_calls=tools_usage,  # not needed for reset tool usage to empty list
+                last_agent=current_agent,
             )
 
     def convert_function_call_response_to_messages(
