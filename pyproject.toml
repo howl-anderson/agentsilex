@@ -1,13 +1,13 @@
 [project]
 name = "agentsilex"
-version = "0.9"
+version = "1.0.0"
 description = "A transparent, minimal, and hackable agent framework"
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [{ name = "Xiaoquan Kong", email = "u1mail2me@gmail.com" }]
 keywords = ["ai", "agent", "llm", "framework", "litellm"]
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
@@ -22,6 +22,11 @@ dependencies = [
   "pydantic>=2.11.7",
 ]
 requires-python = ">=3.12"
+
+[project.optional-dependencies]
+evaluation = [
+  "rouge-score>=0.1.2",
+]
 
 [project.urls]
 Homepage = "https://github.com/howl-anderson/agentsilex"

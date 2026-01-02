@@ -165,14 +165,15 @@ Phoenix will show a complete trace tree of your agent workflow, including all to
 - **Agent Memory** - Callback-based memory management for conversation history control
 - **MCP Client Support** - Connect to Model Context Protocol servers to extend agent capabilities with external tools
 - **Custom Agent Behaviors** - Pluggable callback system for implementing custom behaviors (ReAct, Chain-of-Thought, logging, etc.)
+- **Agent Evaluation Framework** - Test and evaluate agent performance with built-in metrics (tool trajectory, response matching, LLM-as-judge)
 
 ### 🚀 Roadmap
 
+- [ ] **Guardrails** - Input/output validation and safety checks for agent responses
 - [ ] **Async Support** - Asynchronous execution for improved performance
 - [ ] **Tool Call Error Handling** - Graceful handling of failed tool executions
 - [ ] **Parallel Tool Execution** - Execute multiple tool calls concurrently
 - [ ] **State Persistence** - Save and restore agent sessions
 - [ ] **Built-in Tools Library** - Common tools (web search, file operations, etc.)
 - [ ] **Human-in-the-Loop** - Built-in approval flows for sensitive operations
-- [ ] **Agent Evaluation Framework** - Test and evaluate agent performance
 
