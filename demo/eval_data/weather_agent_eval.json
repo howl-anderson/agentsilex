@@ -1,0 +1,63 @@
+{
+  "cases": [
+    {
+      "eval_id": "weather_query_1",
+      "dialog_session": [
+        {
+          "user_utterance": "What's the weather in New York?",
+          "agent_response": "The weather in New York is SUNNY.",
+          "tools_used": [
+            {
+              "name": "get_weather",
+              "arguments": "{\"city\": \"New York\"}",
+              "response": "SUNNY"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "eval_id": "weather_query_2",
+      "dialog_session": [
+        {
+          "user_utterance": "Tell me the weather in Tokyo",
+          "agent_response": "The weather in Tokyo is SUNNY.",
+          "tools_used": [
+            {
+              "name": "get_weather",
+              "arguments": "{\"city\": \"Tokyo\"}",
+              "response": "SUNNY"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "eval_id": "multi_turn_weather",
+      "dialog_session": [
+        {
+          "user_utterance": "What's the weather in Paris?",
+          "agent_response": "The weather in Paris is SUNNY.",
+          "tools_used": [
+            {
+              "name": "get_weather",
+              "arguments": "{\"city\": \"Paris\"}",
+              "response": "SUNNY"
+            }
+          ]
+        },
+        {
+          "user_utterance": "And how about London?",
+          "agent_response": "The weather in London is SUNNY.",
+          "tools_used": [
+            {
+              "name": "get_weather",
+              "arguments": "{\"city\": \"London\"}",
+              "response": "SUNNY"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

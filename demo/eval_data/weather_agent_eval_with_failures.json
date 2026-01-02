@@ -1,0 +1,52 @@
+{
+  "cases": [
+    {
+      "eval_id": "should_pass",
+      "dialog_session": [
+        {
+          "user_utterance": "What's the weather in Berlin?",
+          "agent_response": "The weather in Berlin is SUNNY.",
+          "tools_used": [
+            {
+              "name": "get_weather",
+              "arguments": "{\"city\": \"Berlin\"}",
+              "response": "SUNNY"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "eval_id": "wrong_tool_expected",
+      "dialog_session": [
+        {
+          "user_utterance": "What's the weather in Sydney?",
+          "agent_response": "The weather in Sydney is SUNNY.",
+          "tools_used": [
+            {
+              "name": "wrong_tool_name",
+              "arguments": "{}",
+              "response": "SUNNY"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "eval_id": "wrong_response_expected",
+      "dialog_session": [
+        {
+          "user_utterance": "What's the weather in Tokyo?",
+          "agent_response": "It is raining heavily in Tokyo with thunderstorms expected.",
+          "tools_used": [
+            {
+              "name": "get_weather",
+              "arguments": "{\"city\": \"Tokyo\"}",
+              "response": "SUNNY"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
