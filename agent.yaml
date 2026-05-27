@@ -1,0 +1,46 @@
+spec_version: "0.1.0"
+name: agentsilex
+version: 1.0.0
+description: >
+  AgentSilex is a transparent, minimal, and hackable Python agent framework
+  (~300 lines of core code) that gives developers full control over how their
+  AI agents work. Built on LiteLLM for universal LLM support (OpenAI, Anthropic,
+  Google Gemini, DeepSeek, Azure, Mistral, local models, and 100+ more), it
+  provides a clean Agent/Runner/Session/tool API with multi-agent handoffs,
+  tool calling, structured output, MCP client support, OpenTelemetry observability,
+  streaming, agent memory, and a built-in evaluation framework — all without
+  magic or hidden complexity.
+author: howl-anderson
+license: MIT
+
+model:
+  preferred: anthropic:claude-sonnet-4-6
+  fallback:
+    - openai:gpt-4o
+    - google:gemini-2.0-flash
+  constraints:
+    max_tokens: 8192
+
+skills:
+  - tool-calling
+  - multi-agent-handoff
+  - structured-output
+  - mcp-client
+  - streaming
+  - agent-memory
+  - opentelemetry-observability
+  - evaluation-framework
+
+runtime:
+  max_turns: 10
+  timeout: 600
+
+compliance:
+  risk_tier: standard
+  supervision:
+    human_in_the_loop: none
+    kill_switch: false
+  recordkeeping:
+    audit_logging: true
+  data_governance:
+    pii_handling: passthrough
