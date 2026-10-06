@@ -81,6 +81,38 @@ print(result.final_output)
 - ✅ Maintains conversation history
 - ✅ Returns natural language responses
 
+## Web search with MCP
+
+The MCP adapter supports local stdio servers (`command` and `args`) and remote
+Streamable HTTP servers (`url`). For example, load Parallel's search and page
+fetch tools into an agent:
+
+```python
+from agentsilex.mcp import mcp_tools
+
+tools = mcp_tools({"url": "https://search.parallel.ai/mcp"})
+# Pass tools to Agent(..., tools=tools), just like regular function tools.
+```
+
+[Parallel Search MCP](https://docs.parallel.ai/integrations/mcp/search-mcp)
+provides `web_search` and `web_fetch` without a Parallel API key for exploration
+and light use. Anonymous access is rate limited; LLM inference is separate and
+uses your chosen model provider's configuration and billing.
+
+From a source checkout, run the research example after configuring your model
+provider (for the default model, set `OPENAI_API_KEY`):
+
+```bash
+uv sync
+uv run python demo/parallel_search_demo.py "What is the Model Context Protocol?"
+# Or choose another LiteLLM model with --model.
+```
+
+HTTP configuration also accepts `headers`, `timeout` (default 30 seconds) and
+`sse_read_timeout` (default 300 seconds). The adapter sends an AgentSilex
+User-Agent unless you supply one in `headers`. Discovery and each tool call
+open and close their own MCP session, as with the stdio adapter.
+
 ## Multi-Agent Example
 
 AgentSilex supports intelligent agent handoffs, allowing a main agent to route requests to specialized sub-agents:
@@ -176,4 +208,3 @@ Phoenix will show a complete trace tree of your agent workflow, including all to
 - [ ] **State Persistence** - Save and restore agent sessions
 - [ ] **Built-in Tools Library** - Common tools (web search, file operations, etc.)
 - [ ] **Human-in-the-Loop** - Built-in approval flows for sensitive operations
-

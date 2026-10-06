@@ -3,11 +3,12 @@ Simple unit tests for MCP module.
 Tests basic functionality with mocked MCP server interactions.
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 from mcp import types as mcp_types
 
-from agentsilex.mcp import mcp_tool_as_function_tool, MCPTools
+from agentsilex.mcp import MCPTools, mcp_tool_as_function_tool, mcp_tools
 
 
 class TestMCPToolConversion:
@@ -116,6 +117,55 @@ class TestMCPTools:
         assert len(tools1) == 1
         # list_tools should only be called once
         assert mock_session.list_tools.call_count == 1
+
+
+class TestHTTPMCPTools:
+    @patch("agentsilex.mcp.streamablehttp_client")
+    @patch("agentsilex.mcp.ClientSession")
+    def test_discovery_and_function_call(self, mock_session_class, mock_http):
+        remote_tool = mcp_types.Tool(
+            name="web_search",
+            description="Search the web",
+            inputSchema={"type": "object", "properties": {"query": {"type": "string"}}},
+        )
+        result = mcp_types.CallToolResult(
+            content=[mcp_types.TextContent(type="text", text="A useful source")]
+        )
+        session = AsyncMock()
+        session.list_tools.return_value = MagicMock(tools=[remote_tool])
+        session.call_tool.return_value = result
+        mock_session_class.return_value.__aenter__.return_value = session
+        mock_http.return_value.__aenter__ = AsyncMock(
+            return_value=(MagicMock(), MagicMock(), MagicMock())
+        )
+        mock_http.return_value.__aexit__ = AsyncMock(return_value=None)
+
+        config = {"url": "https://example.com/mcp", "timeout": 10, "sse_read_timeout": 40}
+        tools = mcp_tools(config)
+        assert tools[0](query="MCP") is result
+        session.call_tool.assert_awaited_once_with("web_search", {"query": "MCP"})
+        assert tools[0].parameters_specification == remote_tool.inputSchema
+        assert mock_http.call_count == 2
+        for call in mock_http.call_args_list:
+            assert call.kwargs == {
+                **config,
+                "headers": {
+                    "User-Agent": "AgentSilex (https://github.com/howl-anderson/agentsilex)"
+                },
+            }
+        assert session.initialize.await_count == 2
+        assert mock_http.return_value.__aexit__.await_count == 2
+        assert "headers" not in config
+
+    def test_custom_headers_are_preserved(self):
+        headers = {"user-agent": "MyApplication", "Authorization": "Bearer test"}
+        instance = MCPTools({"url": "https://example.com/mcp", "headers": headers})
+        assert instance.http_params["headers"] == headers
+        assert instance.http_params["headers"] is not headers
+
+    def test_ambiguous_transport_rejected(self):
+        with pytest.raises(ValueError, match="either"):
+            MCPTools({"url": "https://example.com/mcp", "command": "test"})
 
 
 if __name__ == "__main__":
